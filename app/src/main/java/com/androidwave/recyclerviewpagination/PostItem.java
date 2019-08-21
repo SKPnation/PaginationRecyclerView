@@ -13,7 +13,7 @@ public class PostItem {
   }
 
   public void setDescription(String description) {
-    description = description;
+    this.description = description;
   }
 
   public String getTime() {
@@ -21,7 +21,7 @@ public class PostItem {
   }
 
   public void setTime(String time) {
-    time = time;
+    this.time = time;
   }
 
   public String getTitle() {
@@ -29,6 +29,6 @@ public class PostItem {
   }
 
   public void setTitle(String title) {
-    title = title;
+    this.title = title;
   }
 }
