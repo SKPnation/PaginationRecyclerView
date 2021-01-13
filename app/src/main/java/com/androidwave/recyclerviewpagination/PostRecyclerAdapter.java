@@ -15,10 +15,10 @@ public class PostRecyclerAdapter extends RecyclerView.Adapter<BaseViewHolder> {
   private static final int VIEW_TYPE_NORMAL = 1;
   private boolean isLoaderVisible = false;
 
-  private List<PostItem> mPostItems;
+  private List<User> mUserItems;
 
-  public PostRecyclerAdapter(List<PostItem> postItems) {
-    this.mPostItems = postItems;
+  public PostRecyclerAdapter(List<User> userItems) {
+    this.mUserItems = userItems;
   }
 
   @NonNull @Override
@@ -44,7 +44,7 @@ public class PostRecyclerAdapter extends RecyclerView.Adapter<BaseViewHolder> {
   @Override
   public int getItemViewType(int position) {
     if (isLoaderVisible) {
-      return position == mPostItems.size() - 1 ? VIEW_TYPE_LOADING : VIEW_TYPE_NORMAL;
+      return position == mUserItems.size() - 1 ? VIEW_TYPE_LOADING : VIEW_TYPE_NORMAL;
     } else {
       return VIEW_TYPE_NORMAL;
     }
@@ -52,44 +52,44 @@ public class PostRecyclerAdapter extends RecyclerView.Adapter<BaseViewHolder> {
 
   @Override
   public int getItemCount() {
-    return mPostItems == null ? 0 : mPostItems.size();
+    return mUserItems == null ? 0 : mUserItems.size();
   }
 
-  public void addItems(List<PostItem> postItems) {
-    mPostItems.addAll(postItems);
+  public void addItems(List<User> userItems) {
+    mUserItems.addAll(userItems);
     notifyDataSetChanged();
   }
 
   public void addLoading() {
     isLoaderVisible = true;
-    mPostItems.add(new PostItem());
-    notifyItemInserted(mPostItems.size() - 1);
+    mUserItems.add(new User());
+    notifyItemInserted(mUserItems.size() - 1);
   }
 
   public void removeLoading() {
     isLoaderVisible = false;
-    int position = mPostItems.size() - 1;
-    PostItem item = getItem(position);
+    int position = mUserItems.size() - 1;
+    User item = getItem(position);
     if (item != null) {
-      mPostItems.remove(position);
+      mUserItems.remove(position);
       notifyItemRemoved(position);
     }
   }
 
   public void clear() {
-    mPostItems.clear();
+    mUserItems.clear();
     notifyDataSetChanged();
   }
 
-  PostItem getItem(int position) {
-    return mPostItems.get(position);
+  User getItem(int position) {
+    return mUserItems.get(position);
   }
 
   public class ViewHolder extends BaseViewHolder {
-    @BindView(R.id.textViewTitle)
-    TextView textViewTitle;
-    @BindView(R.id.textViewDescription)
-    TextView textViewDescription;
+    @BindView(R.id.textName)
+    TextView textViewName;
+    @BindView(R.id.textEmail)
+    TextView textViewEmail;
 
     ViewHolder(View itemView) {
       super(itemView);
@@ -102,10 +102,10 @@ public class PostRecyclerAdapter extends RecyclerView.Adapter<BaseViewHolder> {
 
     public void onBind(int position) {
       super.onBind(position);
-      PostItem item = mPostItems.get(position);
+      User item = mUserItems.get(position);
 
-      textViewTitle.setText(item.getTitle());
-      textViewDescription.setText(item.getDescription());
+      textViewName.setText(item.getName());
+      textViewEmail.setText(item.getEmail());
     }
   }
 
