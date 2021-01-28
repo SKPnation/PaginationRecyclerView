@@ -122,6 +122,7 @@ public class MainActivity extends AppCompatActivity
 
               if (!loadMore) {
                 items.clear();
+                return;
               }
             }
 
