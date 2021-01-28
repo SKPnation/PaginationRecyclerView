@@ -33,9 +33,12 @@ public class MainActivity extends AppCompatActivity
   private PostRecyclerAdapter adapter;
   private int currentPage = PAGE_START;
   private boolean isLastPage = false;
-  private int totalPage = 10;
+  private int totalPage = 3;
   private boolean isLoading = false;
+  private boolean loadedAll = false;
   int itemCount = 0;
+  ArrayList<User> items;
+  private LinearLayoutManager layoutManager;
 
   DatabaseReference usersDb;
 
@@ -47,19 +50,21 @@ public class MainActivity extends AppCompatActivity
 
     usersDb = FirebaseDatabase.getInstance().getReference().child("Users");
 
+    items = new ArrayList<>();
+
     swipeRefresh.setOnRefreshListener(this);
 
     mRecyclerView.setHasFixedSize(true);
     // use a linear layout manager
 
-    LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+    layoutManager = new LinearLayoutManager(this);
     layoutManager.setStackFromEnd(true);
     layoutManager.setReverseLayout(true);
     mRecyclerView.setLayoutManager(layoutManager);
 
     adapter = new PostRecyclerAdapter(new ArrayList<>());
     mRecyclerView.setAdapter(adapter);
-    getUsers();
+    getUsers(false);
 
     /**
      * add scroll listener while user reach in bottom load more will call
@@ -67,9 +72,14 @@ public class MainActivity extends AppCompatActivity
     mRecyclerView.addOnScrollListener(new PaginationListener(layoutManager) {
       @Override
       protected void loadMoreItems() {
-        isLoading = true;
-        currentPage++;
-        getUsers();
+        int lastVisibleItem = layoutManager.findLastCompletelyVisibleItemPosition();
+        if (lastVisibleItem >= items.size() - 1) {
+          if (!loadedAll) {
+            isLoading = true;
+            mRecyclerView.stopScroll();
+            getUsers(true);
+          }
+        }
       }
 
       @Override
@@ -88,21 +98,45 @@ public class MainActivity extends AppCompatActivity
    * do api call here to fetch data from server
    * In example i'm adding data manually
    */
-  private void getUsers() {
-    final ArrayList<User> items = new ArrayList<>();
+  private void getUsers(boolean loadMore) {
+    final ArrayList<User> tempArrayList = new ArrayList<>();
+    int limit = 9;
+    int offset = items.size();
     new Handler().postDelayed(new Runnable() {
 
       @Override
       public void run() {
-        usersDb.addListenerForSingleValueEvent(new ValueEventListener() {
+        usersDb.limitToFirst(limit).addListenerForSingleValueEvent(new ValueEventListener() {
           @Override
           public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
             for (DataSnapshot ds: dataSnapshot.getChildren())
             {
               User user = ds.getValue(User.class);
 
-              items.add(user);
+              tempArrayList.add(user); // adding the data that has been limited and offset here would solve the problem
             }
+
+            if (tempArrayList.isEmpty()) {
+              loadedAll = true;
+              isLoading = false;
+
+              if (!loadMore) {
+                items.clear();
+              }
+            }
+
+            loadedAll = tempArrayList.size() <= limit;
+
+            if (loadMore) {
+              int positionStart = items.size();
+              items.addAll(tempArrayList);
+              adapter.notifyItemRangeInserted(positionStart, tempArrayList.size());
+            } else {
+              items.clear();
+              items.addAll(tempArrayList);
+              adapter.notifyDataSetChanged();
+            }
+
 
             /**
              * manage progress view
@@ -112,11 +146,12 @@ public class MainActivity extends AppCompatActivity
             swipeRefresh.setRefreshing(false);
 
             // check weather is last page or not
-            if (currentPage < totalPage) {
-              adapter.addLoading();
-            } else {
-              isLastPage = true;
-            }
+//            if (currentPage < totalPage) {
+//              adapter.addLoading();
+//            } else {
+//              isLastPage = true;
+//            }
+
             isLoading = false;
 
           }
@@ -145,6 +180,6 @@ public class MainActivity extends AppCompatActivity
     currentPage = PAGE_START;
     isLastPage = false;
     adapter.clear();
-    getUsers();
+    getUsers(false);
   }
 }
