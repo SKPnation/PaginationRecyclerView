@@ -38,10 +38,6 @@ public abstract class PaginationListener extends RecyclerView.OnScrollListener {
         loadMoreItems();
       }
     }
-    else
-    {
-      //..
-    }
   }
 
   protected abstract void loadMoreItems();

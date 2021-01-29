@@ -1,5 +1,6 @@
 package com.androidwave.recyclerviewpagination;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,10 +16,23 @@ public class PostRecyclerAdapter extends RecyclerView.Adapter<BaseViewHolder> {
   private static final int VIEW_TYPE_NORMAL = 1;
   private boolean isLoaderVisible = false;
 
-  private List<User> mUserItems;
+  Context context;
+  List<User> userList;
 
-  public PostRecyclerAdapter(List<User> userItems) {
-    this.mUserItems = userItems;
+  public PostRecyclerAdapter(Context context, List<User> userList) {
+    this.userList = userList;
+    this.context = context;
+  }
+
+  public void AddAll(List<User> newUsers)
+  {
+    int initSize = newUsers.size();
+    userList.addAll(newUsers);
+    notifyItemRangeChanged(initSize, newUsers.size());
+  }
+
+  public String getLastItemId(){
+    return userList.get(userList.size()-1).getId();
   }
 
   @NonNull @Override
@@ -27,10 +41,10 @@ public class PostRecyclerAdapter extends RecyclerView.Adapter<BaseViewHolder> {
     switch (viewType) {
       case VIEW_TYPE_NORMAL:
         return new ViewHolder(
-            LayoutInflater.from(parent.getContext()).inflate(R.layout.item_post, parent, false));
+                LayoutInflater.from(parent.getContext()).inflate(R.layout.item_post, parent, false));
       case VIEW_TYPE_LOADING:
         return new ProgressHolder(
-            LayoutInflater.from(parent.getContext()).inflate(R.layout.item_loading, parent, false));
+                LayoutInflater.from(parent.getContext()).inflate(R.layout.item_loading, parent, false));
       default:
         return null;
     }
@@ -44,45 +58,48 @@ public class PostRecyclerAdapter extends RecyclerView.Adapter<BaseViewHolder> {
   @Override
   public int getItemViewType(int position) {
     if (isLoaderVisible) {
-      return position == mUserItems.size() - 1 ? VIEW_TYPE_LOADING : VIEW_TYPE_NORMAL;
+      return position == userList.size() - 1 ? VIEW_TYPE_LOADING : VIEW_TYPE_NORMAL;
     } else {
       return VIEW_TYPE_NORMAL;
     }
   }
 
+
   @Override
   public int getItemCount() {
-    return mUserItems == null ? 0 : mUserItems.size();
+    return userList == null ? 0 : userList.size();
   }
 
+
+
   public void addItems(List<User> userItems) {
-    mUserItems.addAll(userItems);
+    userItems.addAll(userItems);
     notifyDataSetChanged();
   }
 
   public void addLoading() {
     isLoaderVisible = true;
-    mUserItems.add(new User());
-    notifyItemInserted(mUserItems.size() - 1);
+    userList.add(new User());
+    notifyItemInserted(userList.size() - 1);
   }
 
   public void removeLoading() {
     isLoaderVisible = false;
-    int position = mUserItems.size() - 1;
+    int position = userList.size() - 1;
     User item = getItem(position);
     if (item != null) {
-      mUserItems.remove(position);
+      userList.remove(position);
       notifyItemRemoved(position);
     }
   }
 
   public void clear() {
-    mUserItems.clear();
+    userList.clear();
     notifyDataSetChanged();
   }
 
   User getItem(int position) {
-    return mUserItems.get(position);
+    return userList.get(position);
   }
 
   public class ViewHolder extends BaseViewHolder {
@@ -102,7 +119,7 @@ public class PostRecyclerAdapter extends RecyclerView.Adapter<BaseViewHolder> {
 
     public void onBind(int position) {
       super.onBind(position);
-      User item = mUserItems.get(position);
+      User item = userList.get(position);
 
       textViewName.setText(item.getName());
       textViewEmail.setText(item.getEmail());
